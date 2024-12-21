@@ -1,8 +1,7 @@
 package com.projects.airBnbApp.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -12,6 +11,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(uniqueConstraints = {
         @UniqueConstraint(
