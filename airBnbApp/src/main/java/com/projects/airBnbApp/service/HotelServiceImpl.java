@@ -5,13 +5,14 @@ import com.projects.airBnbApp.entity.Hotel;
 import com.projects.airBnbApp.entity.Room;
 import com.projects.airBnbApp.exception.ResourceNotFoundException;
 import com.projects.airBnbApp.repository.HotelRepository;
+import com.projects.airBnbApp.repository.RoomRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -20,6 +21,7 @@ public class HotelServiceImpl implements HotelService{
 
     private final HotelRepository hotelRepository;
     private final InventoryService inventoryService;
+    private final RoomRepository roomRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -65,6 +67,7 @@ public class HotelServiceImpl implements HotelService{
     }
 
     @Override
+    @Transactional
     public void activateHotel(Long hotelId) {
         log.info("Activating the Hotel with ID: {}",hotelId);
         Hotel hotel=hotelRepository.findById(hotelId)
@@ -85,19 +88,22 @@ public class HotelServiceImpl implements HotelService{
     }
 
     @Override
+    @Transactional
     public void deleteHotelById(Long id) {
         log.info("Deleting the Hotel with ID: {}",id);
         Hotel hotel=hotelRepository.findById(id)
                 .orElseThrow(
                         ()-> new ResourceNotFoundException("Hotel not found with ID : "+id)
                 );
-        hotelRepository.deleteById(id);
 
         //TODO : delete future inventories for this hotel
 
         for(Room room:hotel.getRooms()){
-            inventoryService.deleteFutureInventories(room);
+            inventoryService.deleteAllInventories(room);
+            roomRepository.deleteById(room.getId());
         }
+
+        hotelRepository.deleteById(id);
 
     }
 }
