@@ -1,6 +1,8 @@
 package com.projects.airBnbApp.service;
 
 import com.projects.airBnbApp.dto.HotelDto;
+import com.projects.airBnbApp.dto.HotelInfoDto;
+import com.projects.airBnbApp.dto.RoomDto;
 import com.projects.airBnbApp.entity.Hotel;
 import com.projects.airBnbApp.entity.Room;
 import com.projects.airBnbApp.exception.ResourceNotFoundException;
@@ -96,7 +98,7 @@ public class HotelServiceImpl implements HotelService{
                         ()-> new ResourceNotFoundException("Hotel not found with ID : "+id)
                 );
 
-        //TODO : delete future inventories for this hotel
+        // delete future inventories for this hotel
 
         for(Room room:hotel.getRooms()){
             inventoryService.deleteAllInventories(room);
@@ -105,5 +107,19 @@ public class HotelServiceImpl implements HotelService{
 
         hotelRepository.deleteById(id);
 
+    }
+
+    @Override
+    public HotelInfoDto getHotelInfoById(Long hotelId) {
+        log.info("Getting the Info for Hotel with ID: {}",hotelId);
+        Hotel hotel=hotelRepository.findById(hotelId)
+                .orElseThrow(
+                        ()-> new ResourceNotFoundException("Hotel not found with ID : "+hotelId)
+                );
+        List<RoomDto> rooms=hotel.getRooms()
+                .stream()
+                .map(room -> modelMapper.map(room,RoomDto.class))
+                .toList();
+        return new HotelInfoDto(modelMapper.map(hotel,HotelDto.class),rooms);
     }
 }
